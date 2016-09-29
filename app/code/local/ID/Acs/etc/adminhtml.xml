@@ -1,0 +1,54 @@
+<?xml version="1.0"?>
+<config>
+    <acl>
+        <resources>
+            <admin>
+                <children>
+                    <system>
+                        <children>
+                            <config>
+                                <children>
+                                    <acs translate="title" module="acs">
+                                        <title>ACS Courier</title>
+                                    </acs>
+                                </children>
+                            </config>
+                        </children>
+                    </system>
+                </children>
+            </admin>
+        </resources>
+    </acl>
+
+    <menu>
+        <acs translate="title" module="acs">
+            <title>ACS Courier</title>
+            <sort_order>25</sort_order>
+            <children>
+                <unprinted translate="title" module="acs">
+                    <title>Print Vouchers</title>
+                    <sort_order>1</sort_order>
+                    <action>adminhtml/acs/unprinted</action>
+                </unprinted>
+
+                <list translate="title" module="acs">
+                    <title>Print Receipt List</title>
+                    <sort_order>1</sort_order>
+                    <action>adminhtml/acs/getlist</action>
+                </list>
+
+                <past_lists translate="title" module="acs">
+                    <title>Past Receipt Lists</title>
+                    <sort_order>998</sort_order>
+                    <action>adminhtml/acs/lists</action>
+                </past_lists>
+
+                <vouchers translate="title" module="acs">
+                    <title>Vouchers</title>
+                    <sort_order>999</sort_order>
+                    <action>adminhtml/acs/vouchers</action>
+                </vouchers>
+            </children>
+        </acs>
+    </menu>
+</config>

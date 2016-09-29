@@ -1,0 +1,170 @@
+<?xml version="1.0"?>
+<config>
+	<modules>
+        <ID_Acs>
+            <version>0.1.0</version>
+        </ID_Acs>
+    </modules>
+
+    <frontend>
+        <routers>
+            <acs>
+                <use>standard</use>
+                <args>
+                    <module>ID_Acs</module>
+                    <frontName>acs</frontName>
+                </args>
+            </acs>
+        </routers>
+
+        <translate>
+            <modules>
+                <ID_Acs>
+                    <files>
+                        <default>ID_Acs.csv</default>
+                    </files>
+                </ID_Acs>
+            </modules>
+        </translate>
+    </frontend>
+
+    <admin>
+	    <routers>
+	        <adminhtml>
+	            <args>
+	                <modules>
+	                    <ID_Acs before="Mage_Adminhtml">ID_Acs_Adminhtml</ID_Acs>
+	                </modules>
+	            </args>
+	        </adminhtml>
+	    </routers>
+	</admin>
+
+	<adminhtml>
+	    <events>
+	        <adminhtml_widget_container_html_before>
+	            <observers>
+	                <acs>
+	                    <class>ID_Acs_Model_Observer</class>
+	                    <method>addButtonVoucher</method>
+	                </acs>
+	            </observers>
+	        </adminhtml_widget_container_html_before>
+
+	    	<core_block_abstract_prepare_layout_before>
+                <observers>
+                    <acs_mass>
+                        <class>ID_Acs_Model_Observer</class>
+                        <method>addActions</method>
+                    </acs_mass>
+                </observers>
+            </core_block_abstract_prepare_layout_before>
+	    </events>
+
+        <translate>
+            <modules>
+                <ID_Acs>
+                    <files>
+                        <default>ID_Acs.csv</default>
+                    </files>
+                </ID_Acs>
+            </modules>
+        </translate>
+
+        <layout>
+            <updates>
+                <id_acs>
+                    <file>id_acs.xml</file>
+                </id_acs>
+            </updates>
+        </layout>
+	</adminhtml>
+
+	<global>
+
+        <fieldsets>
+            <sales_convert_quote>                           
+                <field_custom_price><to_order>*</to_order></field_custom_price>
+            </sales_convert_quote>
+
+            <sales_convert_order>                                              
+                <field_custom_price><to_quote>*</to_quote></field_custom_price>
+            </sales_convert_order>
+        </fieldsets>
+
+        <resources>
+            <id_acs_setup>
+                <setup>
+                    <module>ID_Acs</module>
+                    <class>ID_Acs_Model_Resource_Setup</class>
+                </setup>
+            </id_acs_setup>
+        </resources>
+        
+    	<helpers>
+        	<acs>
+          		<class>ID_Acs_Helper</class>
+        	</acs>
+      	</helpers>
+
+        <models>
+            <id_acs>
+                <class>ID_Acs_Model</class>
+                <resourceModel>id_acs_resource</resourceModel>
+            </id_acs>
+
+            <id_acs_resource>
+                <class>ID_Acs_Model_Resource</class>
+                <entities>
+                    <list>
+                        <table>id_acs_list</table>
+                    </list>
+                    <voucher>
+                        <table>id_acs_voucher</table>
+                    </voucher>
+                </entities>
+            </id_acs_resource>
+        </models>
+
+        <blocks>
+            <adminhtml>
+                <rewrite>
+                    <sales_order_totals>ID_Acs_Block_Adminhtml_Sales_Order_Totals</sales_order_totals>
+                </rewrite>
+            </adminhtml>
+        </blocks>
+
+        <adminhtml_sales_order_create_process_data_before>
+            <observers>
+                <acs>
+                    <type>singleton</type>
+                    <class>acs/observer</class>
+                    <method>saveCustomData</method>
+                </acs>
+            </observers>
+        </adminhtml_sales_order_create_process_data_before>
+    </global>
+
+    <default>
+        <carriers>
+            <id_acs>
+                <active>0</active>
+                <model>id_acs/carrier</model>
+                <title>ACS Courier</title>
+                <sort_order>10</sort_order>
+                <sallowspecific>0</sallowspecific>
+            </id_acs>
+        </carriers>
+
+        <acs>
+            <login>
+                <company_id>demo</company_id>
+                <company_pass>demo</company_pass>
+                <username>demo</username>
+                <password>demo</password>
+                <customerId>2ΑΘ999999</customerId>
+                <sender_name>ACS DDEMO</sender_name>
+            </login>
+        </acs>
+    </default>
+</config>

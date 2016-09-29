@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+    <modules>
+        <ID_Acs>
+            <active>true</active>
+            <codePool>local</codePool>
+            <depends>
+				<Mage_Shipping />
+			</depends>
+        </ID_Acs>
+    </modules>
+</config>
