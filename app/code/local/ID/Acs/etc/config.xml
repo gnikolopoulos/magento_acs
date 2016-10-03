@@ -83,11 +83,11 @@
 	<global>
 
         <fieldsets>
-            <sales_convert_quote>                           
+            <sales_convert_quote>
                 <field_custom_price><to_order>*</to_order></field_custom_price>
             </sales_convert_quote>
 
-            <sales_convert_order>                                              
+            <sales_convert_order>
                 <field_custom_price><to_quote>*</to_quote></field_custom_price>
             </sales_convert_order>
         </fieldsets>
@@ -100,7 +100,7 @@
                 </setup>
             </id_acs_setup>
         </resources>
-        
+
     	<helpers>
         	<acs>
           		<class>ID_Acs_Helper</class>
@@ -127,6 +127,10 @@
         </models>
 
         <blocks>
+            <id_acs>
+                <class>ID_Acs_Block</class>
+            </id_acs>
+
             <adminhtml>
                 <rewrite>
                     <sales_order_totals>ID_Acs_Block_Adminhtml_Sales_Order_Totals</sales_order_totals>
@@ -137,8 +141,7 @@
         <adminhtml_sales_order_create_process_data_before>
             <observers>
                 <acs>
-                    <type>singleton</type>
-                    <class>acs/observer</class>
+                    <class>ID_Acs_Model_Observer</class>
                     <method>saveCustomData</method>
                 </acs>
             </observers>

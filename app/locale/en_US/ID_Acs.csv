@@ -33,3 +33,7 @@
 "Status","Status"
 "Invalid action","Invalid action"
 "Αντικαταβολή ACS (Μόνο για αλλαγές)","Αντικαταβολή ACS (Μόνο για αλλαγές)"
+"Possible wrong address for order #%s","Possible wrong address for order #%s"
+"Possible address problems with order(s):","Possible address problems with order(s):"
+"No problems detected","No problems detected"
+"Validate Address","Validate Address"

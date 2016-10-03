@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <config>
     <tabs>
-        <idacs>
+        <id>
             <label>Interactive Design</label>
             <sort_order>195</sort_order>
-        </idacs>
+        </id>
     </tabs>
 
     <sections>
@@ -177,6 +177,7 @@
 
                         <free translate="label">
                             <label>No Cost of order total is above</label>
+                            <comment>This price should NOT include tax.</comment>
                             <frontend_type>text</frontend_type>
                             <sort_order>6</sort_order>
                             <show_in_default>1</show_in_default>

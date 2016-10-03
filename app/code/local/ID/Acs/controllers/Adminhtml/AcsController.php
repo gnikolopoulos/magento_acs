@@ -24,6 +24,7 @@ class ID_Acs_Adminhtml_AcsController extends Mage_Adminhtml_Controller_Action
 	private $sms_pass;
 
 	private $storeId;
+	private $error;
 
 	private $massNumbers;
 
@@ -54,6 +55,9 @@ class ID_Acs_Adminhtml_AcsController extends Mage_Adminhtml_Controller_Action
 		$this->sms_url = Mage::getStoreConfig('acs/sms/sms_url');
 		$this->sms_user = Mage::getStoreConfig('acs/sms/sms_user');
 		$this->sms_pass = Mage::getStoreConfig('acs/sms/sms_pass');
+
+		$this->storeId = null;
+		$this->error = false;
 	}
 
 	public function indexAction()
@@ -88,8 +92,8 @@ class ID_Acs_Adminhtml_AcsController extends Mage_Adminhtml_Controller_Action
 				} else {
 					$amount = $this->order->getGrandTotal();
 				}
-				$method = 'μ'; // Ελληνικά
-				$extras[] = 'αν'; // Ελληνικά
+				$method = 'Μ'; // Ελληνικά
+				$extras[] = 'ΑΝ'; // Ελληνικά
 			} else {
 				// Άλλο
 				$amount = 0;
@@ -98,97 +102,103 @@ class ID_Acs_Adminhtml_AcsController extends Mage_Adminhtml_Controller_Action
 
 			// Έλεγχος για παράδοση Reception
 			if( $this->order->getShippingDescription() == 'Αποστολή στη διεύθυνσή μου - Παραλαβή από τοπικό κατάστημα ACS' || $this->order->getShippingMethod() == 'id_acs_reception' ) {
-				$extras[] = 'ρσ'; // Ελληνικά
+				$extras[] = 'ΡΣ'; // Ελληνικά
 			}
 
 			// Έλεγχος για παράδοση Σαββατο
 			if( $this->order->getShippingMethod() == 'id_acs_saturday' ) {
-				$extras[] = '5σ'; // Ελληνικά
+				$extras[] = '5Σ'; // Ελληνικά
 			}
 
 			// Έλεγχος για χέρι με χέρι
 			if( $this->order->getShippingMethod() == 'id_acs_exchange' ) {
-				$extras[] = 'δδ'; // Ελληνικά
+				$extras[] = 'ΔΔ'; // Ελληνικά
 			}
 
 			// Έλεγχος ΔΠ
 			if( $this->checkAddr() == 'ΔΠ' ) {
-				$extras[] = 'δπ'; // Ελληνικά
+				$extras[] = 'ΔΠ'; // Ελληνικά
 			}
 
-			// Prepare SOAP Client
-			try {
-				$client = @new SoapClient("https://services.acscourier.net/ACSCreateVoucher-portlet/api/axis/Plugin_ACSCreateVoucher_ACSVoucherService?wsdl");
-				$params = array(
-							'companyId'					=> $this->companyId,
-							'companyPass'				=> $this->companyPass,
-							'username'					=> $this->username,
-							'password'					=> $this->password,
-							'diakDateParal' 			=> date('Y-m-d'),
-							'diakApostoleas'			=> $this->sender,
-							'diakParalhpthsOnoma'		=> $this->order->getShippingAddress()->getName(),
-							'diakParalhpthsDieth'		=> $order_data['street'],
-							'acDiakParalhpthsDiethAr'	=> ( filter_var($order_data['street'], FILTER_SANITIZE_NUMBER_INT) ? filter_var($order_data['street'], FILTER_SANITIZE_NUMBER_INT) : '0'),
-							'acDiakParalhpthsDiethPer'	=> $order_data['city'], // Περιοχή
-							'diakParalhpthsThlef'		=> ($order_data['fax'] ? $order_data['fax'] : $order_data['telephone']), // Τηλέφωνο
-							'diakParalhpthsTk'			=> $order_data['postcode'], // ΤΚ
-							'stationIdDest'				=> ($this->storeId ? $this->storeId : null),
-							'branchIdDest'				=> 1,
-							'diakTemaxia'				=> 1,
-							'diakVaros'					=> 0.5,
-							'diakXrewsh'				=> 2,
-							'diakWraMexri'				=> null,
-							'diakAntikatPoso'			=> floatval($amount), // Ποσό
-							'diakTroposPlAntikat'		=> $method, // Τρόπος
-							'hostName'					=> 'eShop',
-							'diakNotes'					=> ($this->order->getCustomerNote() ? $this->order->getCustomerNote() : ''),
-							'diakCountry'				=> $order_data['country_id'],
-							'diakcFiller'				=> $this->order->getIncrementId(), // Αρ. Παραγγελίας
-							'acDiakStoixs'				=> implode(',', $extras), // ΑΝ = Αντικαταβολή, ΡΣ = Παράδοση Reception
-							'customerId'				=> $this->customerId,
-							'diakParalhpthsCell'		=> $order_data['telephone'], // Κινητό
-							'diakParalhpthsOrofos'		=> null,
-							'diakParalhpthsCompany'		=> ($order_data['company'] ? $order_data['company'] : null),
-							'withReturn'				=> 0,
-							'diakcCompCus'				=> '',
-							'specialDir'				=> '',
-						  );
-				$response = @$client->__soapCall("createVoucher", $params);
-				//$response->no_pod
+			// If there is not any errors
+			if( !$this->error ) {
+				// Prepare SOAP Client
+				try {
+					$client = @new SoapClient("https://services.acscourier.net/ACSCreateVoucher-portlet/api/axis/Plugin_ACSCreateVoucher_ACSVoucherService?wsdl");
+					$params = array(
+								'companyId'					=> $this->companyId,
+								'companyPass'				=> $this->companyPass,
+								'username'					=> $this->username,
+								'password'					=> $this->password,
+								'diakDateParal' 			=> date('Y-m-d'),
+								'diakApostoleas'			=> $this->sender,
+								'diakParalhpthsOnoma'		=> $this->order->getShippingAddress()->getName(),
+								'diakParalhpthsDieth'		=> $order_data['street'],
+								'acDiakParalhpthsDiethAr'	=> ( filter_var($order_data['street'], FILTER_SANITIZE_NUMBER_INT) ? filter_var($order_data['street'], FILTER_SANITIZE_NUMBER_INT) : '0'),
+								'acDiakParalhpthsDiethPer'	=> $order_data['city'], // Περιοχή
+								'diakParalhpthsThlef'		=> ($order_data['fax'] ? $order_data['fax'] : $order_data['telephone']), // Τηλέφωνο
+								'diakParalhpthsTk'			=> $order_data['postcode'], // ΤΚ
+								'stationIdDest'				=> ($this->storeId ? $this->storeId : null),
+								'branchIdDest'				=> 1,
+								'diakTemaxia'				=> 1,
+								'diakVaros'					=> 0.5,
+								'diakXrewsh'				=> 2,
+								'diakWraMexri'				=> null,
+								'diakAntikatPoso'			=> floatval($amount), // Ποσό
+								'diakTroposPlAntikat'		=> $method, // Τρόπος
+								'hostName'					=> 'eShop',
+								'diakNotes'					=> ($this->order->getCustomerNote() ? $this->order->getCustomerNote() : ''),
+								'diakCountry'				=> $order_data['country_id'],
+								'diakcFiller'				=> $this->order->getIncrementId(), // Αρ. Παραγγελίας
+								'acDiakStoixs'				=> implode(',', $extras), // ΑΝ = Αντικαταβολή, ΡΣ = Παράδοση Reception
+								'customerId'				=> $this->customerId,
+								'diakParalhpthsCell'		=> $order_data['telephone'], // Κινητό
+								'diakParalhpthsOrofos'		=> null,
+								'diakParalhpthsCompany'		=> ($order_data['company'] ? $order_data['company'] : null),
+								'withReturn'				=> 0,
+								'diakcCompCus'				=> '',
+								'specialDir'				=> '',
+							  );
+					$response = @$client->__soapCall("createVoucher", $params);
+					//$response->no_pod
 
-				// Proceed if no errors
-				if( !$response->errorMsg ) {
-					$this->createInvoice();
-					$this->createShipment($response->no_pod);
-					if( $this->send_sms ) {
-						//Mage::log('SMS sending triggered');
-						if( $this->sendSMS($response->no_pod) ) {
-							Mage::getSingleton('adminhtml/session')->addSuccess( $this->__('SMS Notification Sent') );
-						} else {
-							Mage::getSingleton('adminhtml/session')->addSuccess( $this->__('SMS Notification not sent') );
+					// Proceed if no errors
+					if( !$response->errorMsg ) {
+						$this->createInvoice();
+						$this->createShipment($response->no_pod);
+						if( $this->send_sms ) {
+							//Mage::log('SMS sending triggered');
+							if( $this->sendSMS($response->no_pod) ) {
+								$extra = $this->__('SMS Notification Sent');
+							} else {
+								$extra = $this->__('SMS Notification not sent');
+							}
 						}
+
+						// Add voucher to Vouchers table
+						$voucher = array(
+							'created_at'	=> date('d-m-Y H:i:s'),
+							'pod'			=> $response->no_pod,
+							'status'		=> 'Active',
+						);
+						Mage::getModel('id_acs/voucher')->setData($voucher)->save();
+
+						$this->_redirectReferer();
+						Mage::getSingleton('adminhtml/session')->addSuccess( $this->__('Created voucher for order #%s.Voucher: %s'.' '.$extra, $this->order->getIncrementId(), $response->no_pod) );
+					} else {
+						$this->_redirectReferer();
+						Mage::getSingleton('adminhtml/session')->addError( $this->__('Could not create voucher for order #%s. Error: %s', $this->order->getIncrementId(), $response->errorMsg) );
 					}
 
-					// Add voucher to Vouchers table
-					$voucher = array(
-						'created_at'	=> date('d-m-Y H:i:s'),
-						'pod'			=> $response->no_pod,
-						'status'		=> 'Active',
-					);
-					Mage::getModel('id_acs/voucher')->setData($voucher)->save();
+				} catch(SoapFault $fault) {
+					trigger_error("SOAP Fault: (faultcode: {$fault->faultcode}, faultstring: {$fault->faultstring})", E_USER_ERROR);
 
 					$this->_redirectReferer();
-					Mage::getSingleton('adminhtml/session')->addSuccess( $this->__('Created voucher for order #%s.Voucher: %s', $this->order->getIncrementId(), $response->no_pod) );
-				} else {
-					$this->_redirectReferer();
-					Mage::getSingleton('adminhtml/session')->addError( $this->__('Could not create voucher for order #%s. Error: %s', $this->order->getIncrementId(), $response->errorMsg) );
+					Mage::getSingleton('adminhtml/session')->addError( $this->__('Could not create voucher for order #%s', $this->order->getIncrementId()) );
 				}
-
-			} catch(SoapFault $fault) {
-				trigger_error("SOAP Fault: (faultcode: {$fault->faultcode}, faultstring: {$fault->faultstring})", E_USER_ERROR);
-
+			} else {
 				$this->_redirectReferer();
-				Mage::getSingleton('adminhtml/session')->addError( $this->__('Could not create voucher for order #%s', $this->order->getIncrementId()) );
+				Mage::getSingleton('adminhtml/session')->addError( $this->__('Possible wrong address for order #%s', $this->order->getIncrementId()) );
 			}
 		} else {
 			$this->_redirectReferer();
@@ -208,25 +218,79 @@ class ID_Acs_Adminhtml_AcsController extends Mage_Adminhtml_Controller_Action
 		return $this;
 	}
 
-	private function checkAddr()
+	public function massValidateAction()
 	{
-		$order_data = $this->order->getShippingAddress()->getData();
-		try {
-			$client = @new SoapClient("https://services.acscourier.net/ACS-AddressValidationNew-portlet/api/axis/Plugin_ACSAddressValidation_ACSAddressService?wsdl");
-			$params = array(
-				'companyId'			=> $this->companyId,
-				'companyPass'		=> $this->companyPass,
-				'username'			=> $this->username,
-				'password'			=> $this->password,
-				'address'			=> $order_data['postcode'] . ', ' . $order_data['city'],
-				'lang'				=> 'GR'
-			  );
-			$response = @$client->__soapCall("validateAddress", $params);
-			$this->storeId = $response{0}->station_id;
-			return $response{0}->dp_dx;
-		} catch(SoapFault $fault) {
-			trigger_error("SOAP Fault: (faultcode: {$fault->faultcode}, faultstring: {$fault->faultstring})", E_USER_ERROR);
-			return false;
+		$this->init();
+
+		$this->order_arr = $this->getRequest()->getParam('order_ids');
+		$problems = array();
+		foreach($this->order_arr as $_order) {
+			$result = $this->checkAddr($_order);
+			if( !$this->checkAddr($_order) ) {
+				$problems[] = $this->order->getIncrementId();
+			}
+		}
+
+		if( !empty($problems)) {
+			$this->_redirectReferer();
+			Mage::getSingleton('adminhtml/session')->addError('Possible address problems with order(s):'.implode(',', $problems ));
+		} else {
+			$this->_redirectReferer();
+			Mage::getSingleton('adminhtml/session')->addSuccess('No problems detected');
+		}
+		return $this;
+	}
+
+	private function checkAddr($orderId = null)
+	{
+		if($orderId == null) {
+			$order_data = $this->order->getShippingAddress()->getData();
+			$this->storeId = null;
+			try {
+				$client = @new SoapClient("https://services.acscourier.net/ACS-AddressValidationNew-portlet/api/axis/Plugin_ACSAddressValidation_ACSAreaService?wsdl");
+				$params = array(
+					'companyId'			=> $this->companyId,
+					'companyPass'		=> $this->companyPass,
+					'username'			=> $this->username,
+					'password'			=> $this->password,
+					'address'			=> $order_data['postcode'],
+					'lang'				=> 'GR'
+				  );
+				$response = @$client->__soapCall("findByZipCode", $params);
+				if(!empty($response)) {
+					$this->storeId = $response{0}->station_id;
+					return $response{0}->dp_dx;
+				} else {
+					$this->error = true;
+					return false;
+				}
+			} catch(SoapFault $fault) {
+				trigger_error("SOAP Fault: (faultcode: {$fault->faultcode}, faultstring: {$fault->faultstring})", E_USER_ERROR);
+				return false;
+			}
+		} else {
+			$this->order = Mage::getModel("sales/order")->load( $orderId );
+			$order_data = $this->order->getShippingAddress()->getData();
+			try {
+				$client = @new SoapClient("https://services.acscourier.net/ACS-AddressValidationNew-portlet/api/axis/Plugin_ACSAddressValidation_ACSAreaService?wsdl");
+				$params = array(
+					'companyId'			=> $this->companyId,
+					'companyPass'		=> $this->companyPass,
+					'username'			=> $this->username,
+					'password'			=> $this->password,
+					'address'			=> $order_data['postcode'],
+					'lang'				=> 'GR'
+				  );
+				$response = @$client->__soapCall("findByZipCode", $params);
+				if(!empty($response)) {
+					return true;
+				} else {
+					return false;
+				}
+			} catch(SoapFault $fault) {
+				trigger_error("SOAP Fault: (faultcode: {$fault->faultcode}, faultstring: {$fault->faultstring})", E_USER_ERROR);
+				return false;
+			}
 		}
 	}
 
@@ -664,7 +728,9 @@ class ID_Acs_Adminhtml_AcsController extends Mage_Adminhtml_Controller_Action
     {
     	$this->init();
 
-    	$this->getResponse()->setRedirect( 'http://acs-eud.acscourier.gr/Eshops/getlist.aspx?MainID='.$this->companyId.'&MainPass='.$this->companyPass.'&UserID='.$this->username.'&UserPass='.$this->password.'&MassNumber='.$this->getRequest()->getParam('massnumber').'&DateParal='.date("Y-m-d") );
+    	$list = Mage::getModel('id_acs/list')->load($this->getRequest()->getParam('massnumber'), 'massnumber');
+
+    	$this->getResponse()->setRedirect( 'http://acs-eud.acscourier.gr/Eshops/getlist.aspx?MainID='.$this->companyId.'&MainPass='.$this->companyPass.'&UserID='.$this->username.'&UserPass='.$this->password.'&MassNumber='.$this->getRequest()->getParam('massnumber').'&DateParal='.date('Y-m-d', strtotime($list->created_at)) );
     }
 
 }

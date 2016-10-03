@@ -53,17 +53,22 @@ class ID_Acs_Model_Observer
 	        'label' => Mage::helper('acs')->__('Print Vouchers'),
 	        'url' => Mage::app()->getStore()->getUrl('*/acs/massReprint'),
 	      ));
+
+	      $block->addItem('validateaddress', array(
+	        'label' => Mage::helper('acs')->__('Validate Address'),
+	        'url' => Mage::app()->getStore()->getUrl('*/acs/massValidate'),
+	      ));
 	    }
 
 	  return $this;
 	}
 
 	public function saveCustomData($event)
-    {
-        $quote = $event->getSession()->getQuote();
-        $quote->setData('field_custom_price', $event->getRequestModel()->getPost('field_custom_price'));
+  {
+    $quote = $event->getSession()->getQuote();
+    $quote->setData('field_custom_price', $event->getRequestModel()->getPost('field_custom_price'));
 
-        return $this;
-    }
+    return $this;
+  }
 
 }
