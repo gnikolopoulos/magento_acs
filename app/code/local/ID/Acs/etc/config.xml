@@ -59,6 +59,15 @@
                     </acs_mass>
                 </observers>
             </core_block_abstract_prepare_layout_before>
+
+            <adminhtml_sales_order_create_process_data_before>
+                <observers>
+                    <acs_customprice>
+                        <class>ID_Acs_Model_Observer</class>
+                        <method>saveCustomData</method>
+                    </acs_customprice>
+                </observers>
+            </adminhtml_sales_order_create_process_data_before>
 	    </events>
 
         <translate>
@@ -122,6 +131,9 @@
                     <voucher>
                         <table>id_acs_voucher</table>
                     </voucher>
+                    <antikatavoles>
+                        <table>id_acs_antikatavoles</table>
+                    </antikatavoles>
                 </entities>
             </id_acs_resource>
         </models>
@@ -137,15 +149,6 @@
                 </rewrite>
             </adminhtml>
         </blocks>
-
-        <adminhtml_sales_order_create_process_data_before>
-            <observers>
-                <acs>
-                    <class>ID_Acs_Model_Observer</class>
-                    <method>saveCustomData</method>
-                </acs>
-            </observers>
-        </adminhtml_sales_order_create_process_data_before>
     </global>
 
     <default>

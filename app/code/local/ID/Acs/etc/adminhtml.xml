@@ -33,21 +33,27 @@
 
                 <list translate="title" module="acs">
                     <title>Print Receipt List</title>
-                    <sort_order>1</sort_order>
+                    <sort_order>2</sort_order>
                     <action>adminhtml/acs/getlist</action>
                 </list>
 
                 <past_lists translate="title" module="acs">
                     <title>Past Receipt Lists</title>
-                    <sort_order>998</sort_order>
+                    <sort_order>990</sort_order>
                     <action>adminhtml/acs/lists</action>
                 </past_lists>
 
                 <vouchers translate="title" module="acs">
                     <title>Vouchers</title>
-                    <sort_order>999</sort_order>
+                    <sort_order>991</sort_order>
                     <action>adminhtml/acs/vouchers</action>
                 </vouchers>
+
+                <antikatavoles translate="title" module="acs">
+                    <title>Antikatavoles</title>
+                    <sort_order>992</sort_order>
+                    <action>adminhtml/acs/antikatavoles</action>
+                </antikatavoles>
             </children>
         </acs>
     </menu>

@@ -87,7 +87,7 @@ class ID_Acs_Adminhtml_AcsController extends Mage_Adminhtml_Controller_Action
 			$extras = array();
 			if( $this->order->getPayment()->getMethodInstance()->getCode() == 'phoenix_cashondelivery' ) {
 				// Αντικαταβολή
-				if( $this->order->getFieldCustomPrice() ) {
+				if( $this->order->getFieldCustomPrice() !== NULL ) {
 					$amount = $this->order->getFieldCustomPrice();
 				} else {
 					$amount = $this->order->getGrandTotal();
@@ -253,8 +253,8 @@ class ID_Acs_Adminhtml_AcsController extends Mage_Adminhtml_Controller_Action
 					'companyPass'		=> $this->companyPass,
 					'username'			=> $this->username,
 					'password'			=> $this->password,
-					'address'			=> $order_data['postcode'],
-					'lang'				=> 'GR'
+					'zip_code'			=> $order_data['postcode'],
+					'only_dp'			=> false
 				  );
 				$response = @$client->__soapCall("findByZipCode", $params);
 				if(!empty($response)) {
@@ -278,8 +278,8 @@ class ID_Acs_Adminhtml_AcsController extends Mage_Adminhtml_Controller_Action
 					'companyPass'		=> $this->companyPass,
 					'username'			=> $this->username,
 					'password'			=> $this->password,
-					'address'			=> $order_data['postcode'],
-					'lang'				=> 'GR'
+					'zip_code'			=> $order_data['postcode'],
+					'only_dp'			=> false
 				  );
 				$response = @$client->__soapCall("findByZipCode", $params);
 				if(!empty($response)) {
@@ -300,7 +300,7 @@ class ID_Acs_Adminhtml_AcsController extends Mage_Adminhtml_Controller_Action
 		{
 			$customerEmailComments = '';
 			// Create shipment and add tracking number
-		    $shipment = Mage::getModel('sales/service_order', $this->order)->prepareShipment($this->_getItemQtys($this->order));
+		    $shipment = Mage::getModel('sales/service_order', $this->order)->prepareShipment(Mage::helper('acs/orders')->_getItemQtys($this->order));
 
 		    if( $shipment )
 		    {
@@ -312,8 +312,8 @@ class ID_Acs_Adminhtml_AcsController extends Mage_Adminhtml_Controller_Action
 			    $track = Mage::getModel('sales/order_shipment_track')->addData($arrTracking);
 	            $shipment->addTrack($track);
 	            $shipment->register();
-	            $this->_saveShipment($shipment, $this->order, $customerEmailComments);
-	            $this->_saveOrder($this->order);
+	            Mage::helper('acs/orders')->_saveShipment($shipment, $this->order, $customerEmailComments);
+	            Mage::helper('acs/orders')->_saveOrder($this->order);
 
                 if( !$shipment->getEmailSent() )
                 {
@@ -373,42 +373,6 @@ class ID_Acs_Adminhtml_AcsController extends Mage_Adminhtml_Controller_Action
 			return false;
 		}
 		return $this;
-	}
-
-	protected function _getItemQtys(Mage_Sales_Model_Order $order)
-	{
-	    $qty = array();
-	    foreach ($order->getAllItems() as $_eachItem) {
-	        if ($_eachItem->getParentItemId()) {
-	            $qty[$_eachItem->getParentItemId()] = $_eachItem->getQtyOrdered();
-	        } else {
-	            $qty[$_eachItem->getId()] = $_eachItem->getQtyOrdered();
-	        }
-	    }
-	    return $qty;
-	}
-
-	protected function _saveShipment(Mage_Sales_Model_Order_Shipment $shipment, Mage_Sales_Model_Order $order, $customerEmailComments = '')
-	{
-	    $shipment->getOrder()->setIsInProcess(true);
-	    $transactionSave = Mage::getModel('core/resource_transaction')
-	                           ->addObject($shipment)
-	                           ->addObject($order)
-	                           ->save();
-	    $emailSentStatus = $shipment->getData('email_sent');
-	    if (!is_null($customerEmail) && !$emailSentStatus) {
-	        $shipment->sendEmail(true, $customerEmailComments);
-	        $shipment->setEmailSent(true);
-	    }
-	    return $this;
-	}
-
-	protected function _saveOrder(Mage_Sales_Model_Order $order)
-	{
-	    $order->setData('state', Mage_Sales_Model_Order::STATE_COMPLETE);
-	    $order->setData('status', Mage_Sales_Model_Order::STATE_COMPLETE);
-	    $order->save();
-	    return $this;
 	}
 
 	private function sms($number,$voucher)
@@ -708,6 +672,15 @@ class ID_Acs_Adminhtml_AcsController extends Mage_Adminhtml_Controller_Action
         $this->renderLayout();
 	}
 
+	public function antikatavolesAction()
+	{
+		$this->_title($this->__('Antikatavoles'));
+        $this->loadLayout();
+        $this->_setActiveMenu('acs/antikatavoles');
+        $this->_addContent($this->getLayout()->createBlock('id_acs/adminhtml_antikatavoles'));
+        $this->renderLayout();
+	}
+
 	public function grid_voucherAction()
     {
         $this->loadLayout();
@@ -724,6 +697,14 @@ class ID_Acs_Adminhtml_AcsController extends Mage_Adminhtml_Controller_Action
         );
     }
 
+    public function grid_antikatavolesAction()
+    {
+        $this->loadLayout();
+        $this->getResponse()->setBody(
+            $this->getLayout()->createBlock('id_acs/adminhtml_antikatavoles_grid')->toHtml()
+        );
+    }
+
     public function printListAction()
     {
     	$this->init();
@@ -731,6 +712,43 @@ class ID_Acs_Adminhtml_AcsController extends Mage_Adminhtml_Controller_Action
     	$list = Mage::getModel('id_acs/list')->load($this->getRequest()->getParam('massnumber'), 'massnumber');
 
     	$this->getResponse()->setRedirect( 'http://acs-eud.acscourier.gr/Eshops/getlist.aspx?MainID='.$this->companyId.'&MainPass='.$this->companyPass.'&UserID='.$this->username.'&UserPass='.$this->password.'&MassNumber='.$this->getRequest()->getParam('massnumber').'&DateParal='.date('Y-m-d', strtotime($list->created_at)) );
+    }
+
+    public function checkordersAction()
+    {
+		Mage::helper('acs/antikatavoles')->_check();
+		$this->_redirect('*/acs/antikatavoles');
+    }
+
+    public function uploadxlsAction()
+    {
+    	if ($data = $this->getRequest()->getParams()) {
+            if (isset($_FILES['filename']['name']) && $_FILES['filename']['name'] != '') {
+                try {
+                    $uploader = new Varien_File_Uploader('filename');
+                    $uploader->setAllowedExtensions(array('xml', 'XML', 'xls', 'XLS'));
+                    $uploader->setAllowRenameFiles(false);
+                    $uploader->setFilesDispersion(false);
+                    $path = Mage::getBaseDir('tmp') . DS . 'antikatavoles';
+                    if (!is_dir($path)) {
+                        mkdir($path, 0777, true);
+                    }
+                    $uploader->save($path, $_FILES['filename']['name']);
+                    $filename = $uploader->getUploadedFileName();
+                    Mage::helper('acs/antikatavoles')->_processFile($filename);
+					Mage::getSingleton('adminhtml/session')->addSuccess( $this->__('File %s uploaded', $filename) );
+                } catch (Exception $e) {
+                    Mage::log( $e->getMessage() );
+                }
+            }
+        }
+        $this->_redirect('*/acs/antikatavoles');
+    }
+
+    public function resetAntikatavoliAction()
+    {
+    	Mage::helper('acs/antikatavoles')->_reset($this->getRequest()->getParam('pod'));
+		$this->_redirect('*/acs/antikatavoles');
     }
 
 }

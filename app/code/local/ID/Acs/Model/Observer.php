@@ -64,11 +64,12 @@ class ID_Acs_Model_Observer
 	}
 
 	public function saveCustomData($event)
-  {
-    $quote = $event->getSession()->getQuote();
-    $quote->setData('field_custom_price', $event->getRequestModel()->getPost('field_custom_price'));
+	{
+		Mage::log('Save data: '.$event->getRequestModel()->getPost('field_custom_price'));
+		$quote = $event->getSession()->getQuote();
+		$quote->setData('field_custom_price', $event->getRequestModel()->getPost('field_custom_price'));
 
-    return $this;
-  }
+		return $this;
+	}
 
 }

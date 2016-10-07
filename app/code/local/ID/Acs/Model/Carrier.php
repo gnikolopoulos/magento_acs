@@ -37,7 +37,7 @@ class ID_Acs_Model_Carrier extends Mage_Shipping_Model_Carrier_Abstract implemen
          */
         $rate->setCarrierTitle($this->getConfigData('title'));
 
-        $rate->setMethod('01_standand');
+        $rate->setMethod('standand');
         $rate->setMethodTitle($this->getConfigData('label_standard'));
 
         if( $data->getPackageValueWithDiscount() >= floatval($this->getConfigData('free')) ) {
@@ -61,7 +61,7 @@ class ID_Acs_Model_Carrier extends Mage_Shipping_Model_Carrier_Abstract implemen
          */
         $rate->setCarrierTitle($this->getConfigData('title'));
 
-        $rate->setMethod('02_reception');
+        $rate->setMethod('reception');
         $rate->setMethodTitle($this->getConfigData('label_reception'));
 
         if( $data->getPackageValueWithDiscount() >= floatval($this->getConfigData('free')) ) {
@@ -85,7 +85,7 @@ class ID_Acs_Model_Carrier extends Mage_Shipping_Model_Carrier_Abstract implemen
          */
         $rate->setCarrierTitle($this->getConfigData('title'));
 
-        $rate->setMethod('99_return');
+        $rate->setMethod('return');
         $rate->setMethodTitle($this->getConfigData('label_return'));
 
         $rate->setPrice($this->getConfigData('return_price'));
@@ -105,7 +105,7 @@ class ID_Acs_Model_Carrier extends Mage_Shipping_Model_Carrier_Abstract implemen
          */
         $rate->setCarrierTitle($this->getConfigData('title'));
 
-        $rate->setMethod('return');
+        $rate->setMethod('saturday');
         $rate->setMethodTitle($this->getConfigData('label_saturday'));
 
         $rate->setPrice($this->getConfigData('saturday_price'));
@@ -125,7 +125,7 @@ class ID_Acs_Model_Carrier extends Mage_Shipping_Model_Carrier_Abstract implemen
          */
         $rate->setCarrierTitle($this->getConfigData('title'));
 
-        $rate->setMethod('return');
+        $rate->setMethod('exchange');
         $rate->setMethodTitle($this->getConfigData('label_exchange'));
 
         if( $data->getPackageValueWithDiscount() >= floatval($this->getConfigData('free')) ) {
@@ -141,9 +141,9 @@ class ID_Acs_Model_Carrier extends Mage_Shipping_Model_Carrier_Abstract implemen
     public function getAllowedMethods()
     {
         return array(
-            '01_standard' => $this->getConfigData('label_standard'),
-            '02_reception' => $this->getConfigData('label_reception'),
-            '99_return' => $this->getConfigData('label_return'),
+            'standard' => $this->getConfigData('label_standard'),
+            'reception' => $this->getConfigData('label_reception'),
+            'return' => $this->getConfigData('label_return'),
             //'saturday' => $this->getConfigData('label_saturday'),
             //'exchange' => $this->getConfigData('label_exchange'),
         );
