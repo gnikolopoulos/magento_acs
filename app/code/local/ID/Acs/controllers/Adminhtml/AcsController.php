@@ -421,6 +421,7 @@ class ID_Acs_Adminhtml_AcsController extends Mage_Adminhtml_Controller_Action
 				$pods[] = $pod->no_pod;
 			}
 			if( count($pods) > 0 ) {
+				$sorted_pods = sort($pods);
 				$this->getResponse()->setRedirect('http://acs-eud.acscourier.gr/Eshops/GetVoucher.aspx?MainID='.$this->companyId.'&MainPass='.$this->companyPass.'&UserID='.$this->username.'&UserPass='.$this->password.'&voucherno='.implode("|", $pods).'&PrintType=2');
 			} else {
 				$this->_redirectReferer();
