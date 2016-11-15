@@ -37,7 +37,7 @@ class ID_Acs_Model_Carrier extends Mage_Shipping_Model_Carrier_Abstract implemen
          */
         $rate->setCarrierTitle($this->getConfigData('title'));
 
-        $rate->setMethod('standand');
+        $rate->setMethod('standard');
         $rate->setMethodTitle($this->getConfigData('label_standard'));
 
         if( $data->getPackageValueWithDiscount() >= floatval($this->getConfigData('free')) ) {
