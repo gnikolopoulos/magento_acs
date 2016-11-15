@@ -82,7 +82,7 @@ class ID_Acs_Adminhtml_AcsController extends Mage_Adminhtml_Controller_Action
 		}
 
 		// Get Order parameters
-		if($this->order->canShip()) {
+		if( $this->order->canShip() && (substr($this->order->getShippingMethod(), 0, 7) === 'id_acs_') ) {
 			$order_data = $this->order->getShippingAddress()->getData();
 			$extras = array();
 			if( $this->order->getPayment()->getMethodInstance()->getCode() == 'phoenix_cashondelivery' ) {
