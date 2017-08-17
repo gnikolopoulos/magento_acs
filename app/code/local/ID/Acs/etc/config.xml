@@ -149,6 +149,16 @@
                 </rewrite>
             </adminhtml>
         </blocks>
+
+        <template>
+            <email>
+                <id_denied_order_email translate="label" module="core">
+                    <label>Denied order notification email</label>
+                    <file>denied_order.html</file>
+                    <type>html</type>
+                </id_denied_order_email>
+            </email>
+        </template>
     </global>
 
     <default>

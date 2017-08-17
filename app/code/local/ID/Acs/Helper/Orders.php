@@ -24,7 +24,7 @@ class ID_Acs_Helper_Orders extends Mage_Core_Helper_Abstract
 	                           ->addObject($order)
 	                           ->save();
 	    $emailSentStatus = $shipment->getData('email_sent');
-	    if (!is_null($customerEmail) && !$emailSentStatus) {
+	    if (!$emailSentStatus) {
 	        $shipment->sendEmail(true, $customerEmailComments);
 	        $shipment->setEmailSent(true);
 	    }

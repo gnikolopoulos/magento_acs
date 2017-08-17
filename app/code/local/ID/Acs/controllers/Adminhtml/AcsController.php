@@ -101,7 +101,7 @@ class ID_Acs_Adminhtml_AcsController extends Mage_Adminhtml_Controller_Action
 			}
 
 			// Έλεγχος για παράδοση Reception
-			if( $this->order->getShippingDescription() == 'Αποστολή στη διεύθυνσή μου - Παραλαβή από τοπικό κατάστημα ACS' || $this->order->getShippingMethod() == 'id_acs_reception' ) {
+			if( $this->order->getShippingMethod() == 'id_acs_reception' ) {
 				$extras[] = 'ΡΣ'; // Ελληνικά
 			}
 
@@ -117,14 +117,14 @@ class ID_Acs_Adminhtml_AcsController extends Mage_Adminhtml_Controller_Action
 
 			// Έλεγχος ΔΠ
 			if( $this->checkAddr() == 'ΔΠ' ) {
-				$extras[] = 'ΔΠ'; // Ελληνικά
+				//$extras[] = 'ΔΠ'; // Ελληνικά
 			}
 
 			// If there is not any errors
 			if( !$this->error ) {
 				// Prepare SOAP Client
 				try {
-					$client = @new SoapClient("https://services.acscourier.net/ACSCreateVoucher-portlet/api/axis/Plugin_ACSCreateVoucher_ACSVoucherService?wsdl");
+					$client = @new SoapClient("http://services.acscourier.net/ACSCreateVoucher-portlet/api/axis/Plugin_ACSCreateVoucher_ACSVoucherService?wsdl");
 					$params = array(
 								'companyId'					=> $this->companyId,
 								'companyPass'				=> $this->companyPass,
@@ -133,7 +133,7 @@ class ID_Acs_Adminhtml_AcsController extends Mage_Adminhtml_Controller_Action
 								'diakDateParal' 			=> date('Y-m-d'),
 								'diakApostoleas'			=> $this->sender,
 								'diakParalhpthsOnoma'		=> $this->order->getShippingAddress()->getName(),
-								'diakParalhpthsDieth'		=> $order_data['street'],
+								'diakParalhpthsDieth'		=> trim( str_replace( filter_var($order_data['street'], FILTER_SANITIZE_NUMBER_INT), "", $order_data['street'] ) ),
 								'acDiakParalhpthsDiethAr'	=> ( filter_var($order_data['street'], FILTER_SANITIZE_NUMBER_INT) ? filter_var($order_data['street'], FILTER_SANITIZE_NUMBER_INT) : '0'),
 								'acDiakParalhpthsDiethPer'	=> $order_data['city'], // Περιοχή
 								'diakParalhpthsThlef'		=> ($order_data['fax'] ? $order_data['fax'] : $order_data['telephone']), // Τηλέφωνο
@@ -179,6 +179,7 @@ class ID_Acs_Adminhtml_AcsController extends Mage_Adminhtml_Controller_Action
 						$voucher = array(
 							'created_at'	=> date('d-m-Y H:i:s'),
 							'pod'			=> $response->no_pod,
+							'orderno'		=> $this->order->getIncrementId(),
 							'status'		=> 'Active',
 						);
 						Mage::getModel('id_acs/voucher')->setData($voucher)->save();
@@ -247,18 +248,18 @@ class ID_Acs_Adminhtml_AcsController extends Mage_Adminhtml_Controller_Action
 			$order_data = $this->order->getShippingAddress()->getData();
 			$this->storeId = null;
 			try {
-				$client = @new SoapClient("https://services.acscourier.net/ACS-AddressValidationNew-portlet/api/axis/Plugin_ACSAddressValidation_ACSAreaService?wsdl");
+				$client = @new SoapClient("http://services.acscourier.net/ACS-AddressValidationNew-portlet/api/axis/Plugin_ACSAddressValidation_ACSAreaService?wsdl");
 				$params = array(
 					'companyId'			=> $this->companyId,
 					'companyPass'		=> $this->companyPass,
 					'username'			=> $this->username,
 					'password'			=> $this->password,
 					'zip_code'			=> $order_data['postcode'],
-					'only_dp'			=> false
+					'only_dp'			=> true
 				  );
 				$response = @$client->__soapCall("findByZipCode", $params);
 				if(!empty($response)) {
-					$this->storeId = $response{0}->station_id;
+					$this->storeId = ($response{0}->station_id ? $response{0}->station_id : null);
 					return $response{0}->dp_dx;
 				} else {
 					$this->error = true;
@@ -272,7 +273,7 @@ class ID_Acs_Adminhtml_AcsController extends Mage_Adminhtml_Controller_Action
 			$this->order = Mage::getModel("sales/order")->load( $orderId );
 			$order_data = $this->order->getShippingAddress()->getData();
 			try {
-				$client = @new SoapClient("https://services.acscourier.net/ACS-AddressValidationNew-portlet/api/axis/Plugin_ACSAddressValidation_ACSAreaService?wsdl");
+				$client = @new SoapClient("http://services.acscourier.net/ACS-AddressValidationNew-portlet/api/axis/Plugin_ACSAddressValidation_ACSAreaService?wsdl");
 				$params = array(
 					'companyId'			=> $this->companyId,
 					'companyPass'		=> $this->companyPass,
@@ -405,7 +406,7 @@ class ID_Acs_Adminhtml_AcsController extends Mage_Adminhtml_Controller_Action
 		$this->init();
 
 		try {
-			$client = @new SoapClient("https://services.acscourier.net/ACSReceiptsList-portlet/api/axis/Plugin_ACSReceiptsList_ACSUnprintedPodsService?wsdl");
+			$client = @new SoapClient("http://services.acscourier.net/ACSReceiptsList-portlet/api/axis/Plugin_ACSReceiptsList_ACSUnprintedPodsService?wsdl");
 			$params = array(
 						'companyId'			=> $this->companyId,
 						'companyPass'		=> $this->companyPass,
@@ -440,14 +441,14 @@ class ID_Acs_Adminhtml_AcsController extends Mage_Adminhtml_Controller_Action
 		$this->init();
 
 		try {
-			$client = @new SoapClient("https://services.acscourier.net/ACSReceiptsList-portlet/axis/Plugin_ACSReceiptsList_ACSReceiptsListService?wsdl");
+			$client = @new SoapClient("http://services.acscourier.net/ACSReceiptsList-portlet/axis/Plugin_ACSReceiptsList_ACSReceiptsListService?wsdl");
 			$params = array(
 						'companyId'			=> $this->companyId,
 						'companyPass'		=> $this->companyPass,
 						'username'			=> $this->username,
 						'password'			=> $this->password,
 						'dateParal'			=> date('Y-m-d'),
-						'myData'				=> '0',
+						'myData'			=> '0',
 					  );
 			$response = @$client->__soapCall("createACSReceiptsList", $params);
 
@@ -506,7 +507,7 @@ class ID_Acs_Adminhtml_AcsController extends Mage_Adminhtml_Controller_Action
 		}
 		
 		try {
-			$client = @new SoapClient("https://services.acscourier.net/ACSReceiptsList-portlet/api/axis/Plugin_ACSReceiptsList_MassNumberEntryService?wsdl");
+			$client = @new SoapClient("http://services.acscourier.net/ACSReceiptsList-portlet/api/axis/Plugin_ACSReceiptsList_MassNumberEntryService?wsdl");
 			$params = array(
 						'companyId'			=> $this->companyId,
 						'companyPass'		=> $this->companyPass,
@@ -562,11 +563,13 @@ class ID_Acs_Adminhtml_AcsController extends Mage_Adminhtml_Controller_Action
 
 	public function deleteVoucherAction($order = null)
 	{
+		$this->init();
+		
 		if( $this->getRequest()->getParam('order') ) {
 			$this->order = Mage::getModel("sales/order")->load( $this->getRequest()->getParam('order') );
 
 			try {
-				$client = @new SoapClient("https://services.acscourier.net/ACSDeleteVoucher-portlet/axis/Plugin_DeleteVoucher_ACSDeleteVoucherService?wsdl");
+				$client = @new SoapClient("http://services.acscourier.net/ACSDeleteVoucher-portlet/axis/Plugin_DeleteVoucher_ACSDeleteVoucherService?wsdl");
 				$params = array(
 							'companyId'			=> $this->companyId,
 							'companyPass'		=> $this->companyPass,
@@ -579,32 +582,41 @@ class ID_Acs_Adminhtml_AcsController extends Mage_Adminhtml_Controller_Action
 				if( !$response->error ) {
 
 					// Delete Shipment
-					if( $this->order->hasShipments() ) {
-						//delete shipment
-						$shipments = $this->order->getShipmentsCollection();
-						foreach ($shipments as $shipment){
-						    $shipment->delete();
-						}
-
-						// Reset item shipment qty
-						// see Mage_Sales_Model_Order_Item::getSimpleQtyToShip()
-						$items = $this->order->getAllVisibleItems();
-						foreach($items as $i){
-						   $i->setQtyShipped(0);
-						   $i->save();
-						}
-
-						//Reset order state
-						$this->order->setState(Mage_Sales_Model_Order::STATE_PROCESSING, true, 'Undo Shipment');
-						$this->order->save();
+					$shipments = $this->order->getShipmentsCollection();
+					foreach ($shipments as $shipment){
+					    $shipment->delete();
 					}
+
+					$invoices = $this->order->getInvoiceCollection();
+                    foreach ($invoices as $invoice){
+                        //delete all invoice items
+                        $items = $invoice->getAllItems(); 
+                        foreach ($items as $item) {
+                            $item->delete();
+                        }
+                        //delete invoice
+                        $invoice->delete();
+                    }
+
+					// Reset item shipment qty
+					// see Mage_Sales_Model_Order_Item::getSimpleQtyToShip()
+					$items = $this->order->getAllVisibleItems();
+					foreach($items as $i){
+					   $i->setQtyShipped(0);
+					   $i->setQtyInvoiced(0);
+					   $i->save();
+					}
+
+					//Reset order state
+					$this->order->setState(Mage_Sales_Model_Order::STATE_PROCESSING, true, 'Undo Shipment');
+					$this->order->save();
 
 					$this->_redirectReferer();
 					Mage::getSingleton('adminhtml/session')->addSuccess( $this->__('Voucher %s deleted', $this->order->getTracksCollection()->getFirstItem()->getNumber()) );
 					return true;
 				} else {
 					$this->_redirectReferer();
-					Mage::getSingleton('adminhtml/session')->addSuccess( $this->__('Could not delete voucher %s', $this->order->getTracksCollection()->getFirstItem()->getNumber()) );
+					Mage::getSingleton('adminhtml/session')->addSuccess( $this->__('Could not delete voucher %s: %s', $this->order->getTracksCollection()->getFirstItem()->getNumber(), $response->error) );
 					return false;
 				}
 			} catch(SoapFault $fault) {
@@ -615,8 +627,9 @@ class ID_Acs_Adminhtml_AcsController extends Mage_Adminhtml_Controller_Action
 			$this->_redirectReferer();
 			Mage::getSingleton('adminhtml/session')->addSuccess( $this->__('Test: Deleted voucher %s', $this->order->getTracksCollection()->getFirstItem()->getNumber()) );
 		} elseif( $this->getRequest()->getParam('pod') ) {
+			$this->init();
 			try {
-				$client = @new SoapClient("https://services.acscourier.net/ACSDeleteVoucher-portlet/axis/Plugin_DeleteVoucher_ACSDeleteVoucherService?wsdl");
+				$client = @new SoapClient("http://services.acscourier.net/ACSDeleteVoucher-portlet/axis/Plugin_DeleteVoucher_ACSDeleteVoucherService?wsdl");
 				$params = array(
 							'companyId'			=> $this->companyId,
 							'companyPass'		=> $this->companyPass,

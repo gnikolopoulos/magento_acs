@@ -14,7 +14,7 @@ class ID_Acs_Model_Observer
 		        $data = array(
 		            'label'     => Mage::helper('acs')->__('Create Voucher'),
 		            'class'     => 'go',
-		            'onclick'   => 'setLocation(\' '  . Mage::helper('adminhtml')->getUrl('*/acs/create', array('order' => $order['order_id'])) . '\')',
+		            'onclick'   => 'setLocation(\''  . Mage::helper('adminhtml')->getUrl('*/acs/create', array('order' => $order['order_id'])) . '\')',
 		        );
 		        $container->addButton('create_voucher', $data);
 		    }
@@ -23,7 +23,7 @@ class ID_Acs_Model_Observer
 		        $data = array(
 		            'label'     => Mage::helper('acs')->__('Print Voucher'),
 		            'class'     => 'go',
-		            'onclick'   => 'setLocation(\' '  . Mage::helper('adminhtml')->getUrl('*/acs/reprintVoucher', array('order' => $order['order_id'])) . '\')',
+		            'onclick'   => 'setLocation(\''.Mage::helper('adminhtml')->getUrl('*/acs/reprintVoucher', array('order' => $order['order_id'])) . '\')',
 		        );
 		        $container->addButton('print_voucher', $data);
 

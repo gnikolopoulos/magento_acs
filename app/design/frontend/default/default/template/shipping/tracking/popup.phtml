@@ -127,7 +127,7 @@
 
                     <?php
                         if( isset($track['number']) ):
-                            $client = @new SoapClient("https://services.acscourier.net/ACSTracking-portlet/api/axis/Plugin_acsTracking_TrackingSummaryWithStatusService?wsdl");
+                            $client = @new SoapClient("http://services.acscourier.net/ACSTracking-portlet/api/axis/Plugin_acsTracking_TrackingSummaryWithStatusService?wsdl");
                             $params = array(
                                         'companyId'         => Mage::getStoreConfig('acs/login/company_id'),
                                         'companyPass'       => Mage::getStoreConfig('acs/login/company_pass'),
@@ -167,7 +167,7 @@
                                 <th colspan="2" height="40" style="vertical-align: bottom;"><h2><?php echo $this->__('Ιστορικό αποστολής'); ?>:</h2></th>
                             </tr>
                         <?php
-                            $client = @new SoapClient("https://services.acscourier.net/ACSTracking-portlet/api/axis/Plugin_acsTracking_TrackingDetailsService?wsdl");
+                            $client = @new SoapClient("http://services.acscourier.net/ACSTracking-portlet/api/axis/Plugin_acsTracking_TrackingDetailsService?wsdl");
                             $params = array(
                                         'companyId'         => Mage::getStoreConfig('acs/login/company_id'),
                                         'companyPass'       => Mage::getStoreConfig('acs/login/company_pass'),

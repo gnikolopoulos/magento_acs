@@ -20,7 +20,7 @@
  *
  * @category    design
  * @package     default_default
- * @copyright   Copyright (c) 2006-2016 X.commerce, Inc. and affiliates (http://www.magento.com)
+ * @copyright   Copyright (c) 2006-2017 X.commerce, Inc. and affiliates (http://www.magento.com)
  * @license     http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 ?>
@@ -28,17 +28,6 @@
     <tbody>
         <?php echo $this->renderTotals(); ?>
         <?php echo $this->renderTotals('footer'); ?>
-
-        <!-- Custom Start -->
-        <tr>
-            <td class="a-right" colspan="1">
-                <label for="field_custom_price"><strong><?php echo Mage::helper('acs')->__('Αντικαταβολή ACS (Μόνο για αλλαγές)') ?></strong></label>
-            </td>
-            <td class="a-right">
-                <input id="field_custom_price" name="field_custom_price" value="<?php echo Mage::getSingleton('adminhtml/session_quote')->getQuote()->getFieldCustomPrice() ?>" class="input-text" type="text">
-            </td>
-        </tr>
-        <!-- Custom end -->
     </tbody>
 </table>
 <div class="divider"></div>

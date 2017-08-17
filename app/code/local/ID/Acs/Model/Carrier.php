@@ -19,6 +19,7 @@ class ID_Acs_Model_Carrier extends Mage_Shipping_Model_Carrier_Abstract implemen
         $result->append($this->_getReceptionShippingRate($request));
         if( Mage::app()->getStore()->isAdmin() || Mage::getDesign()->getArea() == 'adminhtml' ) {
             $result->append($this->_getReturnShippingRate($request));
+            $result->append($this->_getFreeShippingRate($request));
             //$result->append($this->_getSaturdayShippingRate($request));
             //$result->append($this->_getExchangeShippingRate($request));
         }
@@ -40,11 +41,56 @@ class ID_Acs_Model_Carrier extends Mage_Shipping_Model_Carrier_Abstract implemen
         $rate->setMethod('standard');
         $rate->setMethodTitle($this->getConfigData('label_standard'));
 
+        // TODO: First check if products include skis etc
+        if ($data->getAllItems()) {
+            foreach ($data->getAllItems() as $item) {
+                if ($item->getProduct()->isVirtual() || $item->getParentItem()) {
+                    continue;
+                }
+
+                if ($item->getHasChildren() && $item->isShipSeparately()) {
+                    foreach ($item->getChildren() as $child) {
+                        if (!$child->getProduct()->isVirtual()) {
+                            $product_id = $child->getProductId();
+                            $productObj = Mage::getModel('catalog/product')->load($product_id);
+                            if( $productObj->getData('product_category') == '841' ||
+                                $productObj->getData('product_category') == '846' ||
+                                $productObj->getData('product_category') == '1027' ||
+                                $productObj->getData('product_category') == '1083' ||
+                                $productObj->getData('product_category') == '1084' ) {
+                                $rate->setPrice( $this->getConfigData('price-large') );
+                            } elseif( $data->getPackageValueWithDiscount() >= floatval($this->getConfigData('free')) ) {
+                                $rate->setPrice(0);
+                            } else {
+                                $rate->setPrice($this->getConfigData('price'));
+                            }
+                        }
+                    }
+                } else {
+                    $product_id = $item->getProductId();
+                    $productObj = Mage::getModel('catalog/product')->load($product_id);
+                    if( $productObj->getData('product_category') == '841' ||
+                        $productObj->getData('product_category') == '846' ||
+                        $productObj->getData('product_category') == '1027' ||
+                        $productObj->getData('product_category') == '1083' ||
+                        $productObj->getData('product_category') == '1084' ) {
+                        $rate->setPrice( $this->getConfigData('price-large') );
+                    } elseif( $data->getPackageValueWithDiscount() >= floatval($this->getConfigData('free')) ) {
+                        $rate->setPrice(0);
+                    } else {
+                        $rate->setPrice($this->getConfigData('price'));
+                    }
+                }
+            }
+        }
+
+        /*
         if( $data->getPackageValueWithDiscount() >= floatval($this->getConfigData('free')) ) {
             $rate->setPrice(0);
         } else {
             $rate->setPrice($this->getConfigData('price'));
         }
+        */
         $rate->setCost($this->getConfigData('cost'));
 
         return $rate;
@@ -64,11 +110,55 @@ class ID_Acs_Model_Carrier extends Mage_Shipping_Model_Carrier_Abstract implemen
         $rate->setMethod('reception');
         $rate->setMethodTitle($this->getConfigData('label_reception'));
 
+        if ($data->getAllItems()) {
+            foreach ($data->getAllItems() as $item) {
+                if ($item->getProduct()->isVirtual() || $item->getParentItem()) {
+                    continue;
+                }
+
+                if ($item->getHasChildren() && $item->isShipSeparately()) {
+                    foreach ($item->getChildren() as $child) {
+                        if (!$child->getProduct()->isVirtual()) {
+                            $product_id = $child->getProductId();
+                            $productObj = Mage::getModel('catalog/product')->load($product_id);
+                            if( $productObj->getData('product_category') == '841' ||
+                                $productObj->getData('product_category') == '846' ||
+                                $productObj->getData('product_category') == '1027' ||
+                                $productObj->getData('product_category') == '1083' ||
+                                $productObj->getData('product_category') == '1084' ) {
+                                $rate->setPrice( $this->getConfigData('price-large') );
+                            } elseif( $data->getPackageValueWithDiscount() >= floatval($this->getConfigData('free')) ) {
+                                $rate->setPrice(0);
+                            } else {
+                                $rate->setPrice($this->getConfigData('price'));
+                            }
+                        }
+                    }
+                } else {
+                    $product_id = $item->getProductId();
+                    $productObj = Mage::getModel('catalog/product')->load($product_id);
+                    if( $productObj->getData('product_category') == '841' ||
+                        $productObj->getData('product_category') == '846' ||
+                        $productObj->getData('product_category') == '1027' ||
+                        $productObj->getData('product_category') == '1083' ||
+                        $productObj->getData('product_category') == '1084' ) {
+                        $rate->setPrice( $this->getConfigData('price-large') );
+                    } elseif( $data->getPackageValueWithDiscount() >= floatval($this->getConfigData('free')) ) {
+                        $rate->setPrice(0);
+                    } else {
+                        $rate->setPrice($this->getConfigData('price'));
+                    }
+                }
+            }
+        }
+
+        /*
         if( $data->getPackageValueWithDiscount() >= floatval($this->getConfigData('free')) ) {
             $rate->setPrice(0);
         } else {
             $rate->setPrice($this->getConfigData('price'));
         }
+        */
         $rate->setCost($this->getConfigData('cost'));
 
         return $rate;
@@ -90,6 +180,26 @@ class ID_Acs_Model_Carrier extends Mage_Shipping_Model_Carrier_Abstract implemen
 
         $rate->setPrice($this->getConfigData('return_price'));
         $rate->setCost($this->getConfigData('cost'));
+
+        return $rate;
+    }
+
+    protected function _getFreeShippingRate($data)
+    {
+        $rate = Mage::getModel('shipping/rate_result_method');
+
+        $rate->setCarrier($this->_code);
+        /**
+         * getConfigData(config_key) returns the configuration value for the
+         * carriers/[carrier_code]/[config_key]
+         */
+        $rate->setCarrierTitle($this->getConfigData('title'));
+
+        $rate->setMethod('free');
+        $rate->setMethodTitle($this->getConfigData('label_free'));
+
+        $rate->setPrice(0);
+        $rate->setCost(0);
 
         return $rate;
     }
@@ -137,13 +247,14 @@ class ID_Acs_Model_Carrier extends Mage_Shipping_Model_Carrier_Abstract implemen
 
         return $rate;
     }
-    
+
     public function getAllowedMethods()
     {
         return array(
             'standard' => $this->getConfigData('label_standard'),
             'reception' => $this->getConfigData('label_reception'),
             'return' => $this->getConfigData('label_return'),
+            'free' => $this->getConfigData('label_free'),
             //'saturday' => $this->getConfigData('label_saturday'),
             //'exchange' => $this->getConfigData('label_exchange'),
         );

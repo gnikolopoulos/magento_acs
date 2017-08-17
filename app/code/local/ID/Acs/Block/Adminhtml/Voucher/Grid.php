@@ -56,6 +56,15 @@ class ID_Acs_Block_Adminhtml_Voucher_Grid extends Mage_Adminhtml_Block_Widget_Gr
             )
         );
         $this->addColumn(
+            'orderno',
+            array(
+                'header'    => Mage::helper('acs')->__('Order No'),
+                'align'     => 'left',
+                'width'     => '200px',
+                'index'     => 'orderno',
+            )
+        );
+        $this->addColumn(
             'created_at',
             array(
                 'header' => Mage::helper('acs')->__('Created at'),
@@ -98,9 +107,9 @@ class ID_Acs_Block_Adminhtml_Voucher_Grid extends Mage_Adminhtml_Block_Widget_Gr
                 'sortable'  => false,
             )
         );
-        $this->addExportType('*/*/exportCsv', Mage::helper('acs')->__('CSV'));
-        $this->addExportType('*/*/exportExcel', Mage::helper('acs')->__('Excel'));
-        $this->addExportType('*/*/exportXml', Mage::helper('acs')->__('XML'));
+        //$this->addExportType('*/*/exportCsv', Mage::helper('acs')->__('CSV'));
+        //$this->addExportType('*/*/exportExcel', Mage::helper('acs')->__('Excel'));
+        //$this->addExportType('*/*/exportXml', Mage::helper('acs')->__('XML'));
         return parent::_prepareColumns();
     }
 

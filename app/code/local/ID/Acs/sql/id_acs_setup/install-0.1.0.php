@@ -55,6 +55,14 @@ $table_voucher = $this->getConnection()
         'POD No'
     )
     ->addColumn(
+        'orderno',
+        Varien_Db_Ddl_Table::TYPE_TEXT, 255,
+        array(
+            'nullable'  => false,
+        ),
+        'Order No'
+    )
+    ->addColumn(
         'created_at',
         Varien_Db_Ddl_Table::TYPE_TIMESTAMP,
         null,

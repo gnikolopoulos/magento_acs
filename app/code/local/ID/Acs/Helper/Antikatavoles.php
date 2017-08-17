@@ -90,10 +90,12 @@ class ID_Acs_Helper_Antikatavoles extends Mage_Core_Helper_Abstract
 		$existing = $this->getExisting();
 
 		$data = Mage::getModel('sales/order')->getCollection()
+				->join( array('payment' => 'sales/order_payment'), 'main_table.entity_id=payment.parent_id', array('payment_method' => 'payment.method') )
 			    ->addAttributeToFilter('main_table.created_at', array( 'to'=>date("Y-m-d", strtotime("yesterday")) ))
-				->addAttributeToFilter('main_table.status', array( 'in' => array('complete','delivered') ))
+				->addAttributeToFilter('main_table.status', array( 'in' => array('delivered') ))
 				->addAttributeToFilter('main_table.increment_id', array( 'nin' => $existing->getColumnValues('order') ))
-				->addAttributeToFilter('main_table.shipping_method', array( 'in' => array('id_acs_standand','id_acs_return','id_acs_reception') ));
+				->addAttributeToFilter('main_table.shipping_method', array( 'in' => array('id_acs_standand','id_acs_return','id_acs_reception') ))
+				->addAttributeToFilter('payment.method', array( 'in' => array('phoenix_cashondelivery')) );
 		return $data;
 	}
 
