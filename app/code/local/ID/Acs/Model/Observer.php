@@ -10,16 +10,22 @@ class ID_Acs_Model_Observer
 
 	    if( $container instanceof Mage_Adminhtml_Block_Sales_Order_View ) {
 	    	$order_obj = Mage::getModel('sales/order')->load($order['order_id']);
-	    	if( !$order_obj->isCanceled() && $order_obj->canShip() ) {
+	    	if( !$order_obj->isCanceled() && $order_obj->canShip() && (substr($this->order->getShippingMethod(), 0, 7) === 'id_acs_') ) {
 		        $data = array(
 		            'label'     => Mage::helper('acs')->__('Create Voucher'),
 		            'class'     => 'go',
 		            'onclick'   => 'setLocation(\''  . Mage::helper('adminhtml')->getUrl('*/acs/create', array('order' => $order['order_id'])) . '\')',
 		        );
 		        $container->addButton('create_voucher', $data);
+
+		        /*
+		         * Hide Ship and Invoice buttons
+		         */
+		        $container->removeButton('order_ship');
+		        $container->removeButton('order_invoice');
 		    }
 
-		    if( !$order_obj->isCanceled() && $order_obj->getStatus() == 'complete' ) {
+		    if( !$order_obj->isCanceled() && $order_obj->getStatus() == 'complete' && (substr($this->order->getShippingMethod(), 0, 7) === 'id_acs_') ) {
 		        $data = array(
 		            'label'     => Mage::helper('acs')->__('Print Voucher'),
 		            'class'     => 'go',
