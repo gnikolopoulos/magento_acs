@@ -14,6 +14,11 @@ class ID_Acs_IndexController extends Mage_Core_Controller_Front_Action
 		$this->companyPass = Mage::getStoreConfig('acs/login/company_pass');
 		$this->username = Mage::getStoreConfig('acs/login/username');
 		$this->password = Mage::getStoreConfig('acs/login/password');
+        
+        $this->send_sms = Mage::getStoreConfig('acs/sms/send_sms');
+		$this->sms_url = Mage::getStoreConfig('acs/sms/sms_url');
+		$this->sms_user = Mage::getStoreConfig('acs/sms/sms_user');
+		$this->sms_pass = Mage::getStoreConfig('acs/sms/sms_pass');
 	}
 
     public function indexAction()
@@ -45,7 +50,10 @@ class ID_Acs_IndexController extends Mage_Core_Controller_Front_Action
 					$order->setStatus("denied");
 					$order->save();
 					$this->sendDeniedEmail($order);
-					$this->sendSMS($order);
+                    
+                    if( $this->send_sms ) {
+				        $this->sendSMS($order);
+                    }
 				} else {
 					echo $order->getIncrementId() . ' Not Delivered<br />';
 					// Other stuff...
@@ -58,7 +66,6 @@ class ID_Acs_IndexController extends Mage_Core_Controller_Front_Action
         // Get order
         $storeId = Mage::app()->getStore()->getStoreId();
         Mage::log('Order for denied:'.$order->getIncrementId());
-        /*
         if( $order->getStatus() == 'denied' ) {
             // Order has been denied, prepare email
             $previousStore = Mage::app()->getStore();
@@ -75,17 +82,13 @@ class ID_Acs_IndexController extends Mage_Core_Controller_Front_Action
             $emailTemplate->send( 'info@fifthelement.gr' ,'Fifth Element', $emailTemplateVariables);
 
             Mage::app()->setCurrentStore($previousStore->getCode());
-
-            $this->sendSMS($order);
         }
-        */
 
         return $this;
     }
 
     private function sendSMS($order)
     {
-        $url = 'http://www.liveall.eu/webservice/sms/sendSMSHTTP.php';
         $message = 'ΕΝΗΜΕΡΩΘΗΚΑΜΕ ΓΙΑ ΤΗΝ ΑΡΝΗΣΗ ΠΑΡΑΛΑΒΗΣ ΤΗΣ ΠΑΡΑΓΓΕΛΙΑΣ ΣΑΣ #'.$order->getIncrementId().'.ΣΑΣ ΕΧΕΙ ΣΤΑΛΕΙ EMAIL ΣΧΕΤΙΚΑ ΜΕ ΤΗΝ ΟΦΕΙΛΗ ΣΑΣ ΒΑΣΕΙ ΤΩΝ ΟΡΩΝ ΠΟΥ ΕΧΕΤΕ ΑΠΟΔΕΧΘΕΙ.';
 
         $phone = $order->getShippingAddress()->getTelephone();
@@ -96,15 +99,15 @@ class ID_Acs_IndexController extends Mage_Core_Controller_Front_Action
             if ( preg_match('#^69#', $phone) === 1 && strlen($phone) == 10 ) {
                 // Is valid mobile
                 $data = array(
-                    'username'      => 'info_486',
-                    'password'      => 'Fifth$lement',
+                    'username'      => $this->sms_user,
+                    'password'      => $this->sms_pass,
                     'destination'   => '30'.$phone,
                     'sender'        => '5th Element',
                     'message'       => $message,
                     'batchuserinfo' => 'OrderDenied',
                     'pricecat'      => 0
                 );
-                $response = file_get_contents( $url.'?'.http_build_query($data) );
+                $response = file_get_contents( $this->sms_url.'?'.http_build_query($data) );
 
                 if( preg_match('#^OK ID:[0-9]{1,}#', $response) === 1 ) {
                     return true;
@@ -115,15 +118,15 @@ class ID_Acs_IndexController extends Mage_Core_Controller_Front_Action
             } elseif( preg_match('#^69#', $fax) === 1 && strlen($fax) == 10 ) {
                 // Is valid mobile
                 $data = array(
-                            'username'      => 'info_486',
-                            'password'      => 'Fifth$lement',
+                            'username'      => $this->sms_user,
+                            'password'      => $this->sms_pass,
                             'destination'   => '30'.$fax,
                             'sender'        => '5th Element',
                             'message'       => $message,
                             'batchuserinfo' => 'OrderDenied',
                             'pricecat'      => 0
                         );
-                $response = file_get_contents( $url.'?'.http_build_query($data) );
+                $response = file_get_contents( $this->sms_url.'?'.http_build_query($data) );
 
                 if( preg_match('#^OK ID:[0-9]{1,}#', $response) === 1 ) {
                     return true;
